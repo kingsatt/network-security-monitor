@@ -29,3 +29,14 @@ jobs:
 
       - name: Run tests
         run: pytest
+
+  container:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build container image
+        run: docker build -t network-security-monitor:ci .
