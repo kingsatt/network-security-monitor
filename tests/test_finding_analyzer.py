@@ -129,3 +129,44 @@ def test_unknown_service_does_not_create_finding():
     finding = FindingAnalyzer().analyze(result)
 
     assert finding is None
+
+def test_rdp_exposed():
+    result = PortScanResult(
+        port=3389,
+        is_open=True,
+        service="RDP",
+    )
+
+    finding = FindingAnalyzer().analyze(result)
+
+    assert finding is not None
+    assert finding.rule_id == "RDP_EXPOSED"
+    assert finding.severity == Severity.HIGH
+
+
+def test_vnc_exposed():
+    result = PortScanResult(
+        port=5900,
+        is_open=True,
+        service="VNC",
+    )
+
+    finding = FindingAnalyzer().analyze(result)
+
+    assert finding is not None
+    assert finding.rule_id == "VNC_EXPOSED"
+    assert finding.severity == Severity.HIGH
+
+
+def test_mongodb_exposed():
+    result = PortScanResult(
+        port=27017,
+        is_open=True,
+        service="MONGODB",
+    )
+
+    finding = FindingAnalyzer().analyze(result)
+
+    assert finding is not None
+    assert finding.rule_id == "MONGODB_EXPOSED"
+    assert finding.severity == Severity.HIGH

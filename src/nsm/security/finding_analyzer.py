@@ -18,6 +18,7 @@ class SecurityFinding:
     severity: Severity
     title: str
     description: str
+    recommendation: str
 
 
 class FindingAnalyzer:
@@ -30,6 +31,9 @@ class FindingAnalyzer:
                 "Telnet transmits data without encryption and may expose "
                 "credentials and other sensitive information."
             ),
+            "recommendation": (
+                "Disable Telnet and use SSH for secure remote administration."
+            ),
         },
         "FTP": {
             "rule_id": "FTP_EXPOSED",
@@ -38,6 +42,10 @@ class FindingAnalyzer:
             "description": (
                 "FTP commonly transmits credentials and data without "
                 "encryption."
+            ),
+            "recommendation": (
+                "Disable FTP when possible and use SFTP or FTPS "
+                "for encrypted file transfers."
             ),
         },
         "SMB": {
@@ -48,6 +56,10 @@ class FindingAnalyzer:
                 "An exposed SMB service may increase the attack surface "
                 "of the host."
             ),
+            "recommendation": (
+                "Restrict SMB access to trusted networks and disable "
+                "unnecessary SMB exposure."
+            ),
         },
         "HTTP": {
             "rule_id": "HTTP_UNENCRYPTED",
@@ -56,6 +68,10 @@ class FindingAnalyzer:
             "description": (
                 "HTTP does not encrypt application traffic, allowing "
                 "network traffic to potentially be observed or modified."
+            ),
+            "recommendation": (
+                "Use HTTPS instead of unencrypted HTTP and redirect "
+                "HTTP traffic to HTTPS."
             ),
         },
         "MYSQL": {
@@ -66,6 +82,10 @@ class FindingAnalyzer:
                 "An exposed database service increases the attack surface "
                 "and may allow unauthorized access if improperly secured."
             ),
+            "recommendation": (
+                "Restrict MySQL access to trusted hosts and avoid exposing "
+                "the database directly to untrusted networks."
+            ),
         },
         "POSTGRESQL": {
             "rule_id": "POSTGRESQL_EXPOSED",
@@ -75,6 +95,10 @@ class FindingAnalyzer:
                 "An exposed database service increases the attack surface "
                 "and may allow unauthorized access if improperly secured."
             ),
+            "recommendation": (
+                "Restrict PostgreSQL access to trusted hosts and avoid "
+                "exposing the database directly to untrusted networks."
+            ),
         },
         "REDIS": {
             "rule_id": "REDIS_EXPOSED",
@@ -82,7 +106,52 @@ class FindingAnalyzer:
             "title": "Redis service exposed",
             "description": (
                 "An exposed Redis service may allow unauthorized access "
-                "if authentication and network restrictions are not properly configured."
+                "if authentication and network restrictions are not "
+                "properly configured."
+            ),
+            "recommendation": (
+                "Restrict Redis access to trusted networks and require "
+                "authentication where appropriate."
+            ),
+        },
+        "RDP": {
+            "rule_id": "RDP_EXPOSED",
+            "severity": Severity.HIGH,
+            "title": "Exposed RDP service",
+            "description": (
+                "An exposed RDP service increases the attack surface "
+                "and may be targeted for unauthorized remote access."
+            ),
+            "recommendation": (
+                "Restrict RDP access to trusted networks or VPN access "
+                "and disable unnecessary public exposure."
+            ),
+        },
+        "VNC": {
+            "rule_id": "VNC_EXPOSED",
+            "severity": Severity.HIGH,
+            "title": "Exposed VNC service",
+            "description": (
+                "An exposed VNC service may allow unauthorized remote "
+                "desktop access if it is not properly secured."
+            ),
+            "recommendation": (
+                "Restrict VNC access to trusted networks or VPN access "
+                "and use strong authentication."
+            ),
+        },
+        "MONGODB": {
+            "rule_id": "MONGODB_EXPOSED",
+            "severity": Severity.HIGH,
+            "title": "Exposed MongoDB service",
+            "description": (
+                "An exposed MongoDB service may allow unauthorized database "
+                "access if authentication and network restrictions are not "
+                "properly configured."
+            ),
+            "recommendation": (
+                "Restrict MongoDB access to trusted networks and require "
+                "authentication."
             ),
         },
     }
@@ -109,4 +178,5 @@ class FindingAnalyzer:
             severity=rule["severity"],
             title=rule["title"],
             description=rule["description"],
+            recommendation=rule["recommendation"],
         )
