@@ -28,6 +28,8 @@ def save_scan(
             is_open=result.is_open,
             service=result.service,
             banner=result.banner,
+            product=result.product,
+            version=result.version,
         )
 
     findings = analyze_scan(results)

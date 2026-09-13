@@ -20,6 +20,8 @@ class ScanResultResponse(BaseModel):
     is_open: bool
     service: str | None = None
     banner: str | None = None
+    product: str | None = None
+    version: str | None = None
 
 
 class ScanSummaryResponse(BaseModel):

@@ -1,31 +1,29 @@
-from fastapi import APIRouter
+from collections.abc import Generator
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 from nsm.api.schemas import (
+    ScanDetailResponse,
     ScanRequest,
     ScanResponse,
     ScanResultResponse,
     ScanSummaryResponse,
-    ScanDetailResponse,
     SecurityFindingResponse,
 )
 from nsm.db.database import SessionLocal
 from nsm.db.repository import (
-    get_scans,
     get_scan,
-    get_scan_results,
     get_scan_findings,
+    get_scan_results,
+    get_scans,
 )
-from nsm.services.scan_service import run_scan
-from fastapi import APIRouter, HTTPException
-from collections.abc import Generator
-
-from fastapi import APIRouter, Depends, HTTPException
-
-from sqlalchemy.orm import Session
-
 from nsm.security.scan_analyzer import analyze_scan
+from nsm.services.scan_service import run_scan
+
 
 router = APIRouter()
+
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -49,6 +47,8 @@ def scan(request: ScanRequest):
             is_open=result.is_open,
             service=result.service,
             banner=result.banner,
+            product=result.product,
+            version=result.version,
         )
         for result in results
     ]
@@ -94,6 +94,7 @@ def list_scans(
         for scan in scans
     ]
 
+
 @router.get(
     "/scans/{scan_id}",
     response_model=ScanDetailResponse,
@@ -114,6 +115,7 @@ def get_scan_by_id(
         db,
         scan.id,
     )
+
     findings = get_scan_findings(
         db,
         scan.id,
@@ -125,6 +127,8 @@ def get_scan_by_id(
             is_open=result.is_open,
             service=result.service,
             banner=result.banner,
+            product=result.product,
+            version=result.version,
         )
         for result in results
     ]

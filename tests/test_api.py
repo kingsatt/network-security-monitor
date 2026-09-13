@@ -58,6 +58,43 @@ def test_create_scan(mock_run_scan, client):
     )
 
 @patch("nsm.api.routes.run_scan")
+def test_create_scan_returns_product_and_version(mock_run_scan, client):
+    mock_run_scan.return_value = [
+        PortScanResult(
+            port=22,
+            is_open=True,
+            service="SSH",
+            banner="SSH-2.0-OpenSSH_9.9",
+            product="OpenSSH",
+            version="9.9",
+        )
+    ]
+
+    response = client.post(
+        "/scan",
+        json={
+            "target": "127.0.0.1",
+            "ports": [22],
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["results"][0]["port"] == 22
+    assert data["results"][0]["is_open"] is True
+    assert data["results"][0]["service"] == "SSH"
+    assert data["results"][0]["banner"] == "SSH-2.0-OpenSSH_9.9"
+    assert data["results"][0]["product"] == "OpenSSH"
+    assert data["results"][0]["version"] == "9.9"
+
+    mock_run_scan.assert_called_once_with(
+        target="127.0.0.1",
+        ports=[22],
+    )
+
+@patch("nsm.api.routes.run_scan")
 def test_create_scan_returns_security_findings(mock_run_scan, client):
     mock_run_scan.return_value = [
         PortScanResult(

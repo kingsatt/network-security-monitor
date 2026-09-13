@@ -29,6 +29,8 @@ def create_scan_result(
     is_open: bool,
     service: str | None,
     banner: str | None,
+    product: str | None,
+    version: str | None,
 ) -> ScanResult:
     result = ScanResult(
         scan_id=scan_id,
@@ -36,6 +38,8 @@ def create_scan_result(
         is_open=is_open,
         service=service,
         banner=banner,
+        product=product,
+        version=version,
     )
 
     db.add(result)
