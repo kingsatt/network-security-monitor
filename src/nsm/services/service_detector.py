@@ -19,6 +19,9 @@ class ServiceDetector:
         5432: "POSTGRESQL",
         6379: "REDIS",
         8080: "HTTP-ALT",
+        3389: "RDP",
+        5900: "VNC",
+        27017: "MONGODB",
     }
 
     @classmethod

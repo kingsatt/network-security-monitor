@@ -1,11 +1,18 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from typing import Annotated
 
+from pydantic import BaseModel, Field
 
 class ScanRequest(BaseModel):
-    target: str
-    ports: list[int]
+    model_config = {
+        "str_strip_whitespace": True,
+    }
+
+    target: str = Field(min_length=1)
+    ports: list[Annotated[int, Field(ge=1, le=65535)]] = Field(
+        min_length=1
+    )
 
 
 class ScanResultResponse(BaseModel):

@@ -85,3 +85,61 @@ def test_list_scans_after_scan(client):
     assert data[0]["id"] == 1
     assert data[0]["target"] == "127.0.0.1"
     assert data[0]["completed_at"] is not None
+
+def test_scan_rejects_empty_ports(client):
+    response = client.post(
+        "/scan",
+        json={
+            "target": "127.0.0.1",
+            "ports": [],
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_scan_rejects_invalid_port(client):
+    response = client.post(
+        "/scan",
+        json={
+            "target": "127.0.0.1",
+            "ports": [0],
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_scan_rejects_port_above_maximum(client):
+    response = client.post(
+        "/scan",
+        json={
+            "target": "127.0.0.1",
+            "ports": [65536],
+        },
+    )
+
+    assert response.status_code == 422
+
+def test_scan_rejects_empty_target(client):
+    response = client.post(
+        "/scan",
+        json={
+            "target": "",
+            "ports": [22],
+        },
+    )
+
+    assert response.status_code == 422
+
+def test_scan_strips_target_whitespace(client):
+    response = client.post(
+        "/scan",
+        json={
+            "target": "  127.0.0.1  ",
+            "ports": [22],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["target"] == "127.0.0.1"
