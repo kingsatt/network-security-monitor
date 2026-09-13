@@ -21,6 +21,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
 
+from nsm.security.scan_analyzer import analyze_scan
+from nsm.api.schemas import SecurityFindingResponse
 
 router = APIRouter()
 
@@ -50,9 +52,25 @@ def scan(request: ScanRequest):
         for result in results
     ]
 
+    findings = analyze_scan(results)
+
+    response_findings = [
+        SecurityFindingResponse(
+            rule_id=finding.rule_id,
+            port=finding.port,
+            service=finding.service,
+            severity=finding.severity.value,
+            title=finding.title,
+            description=finding.description,
+            recommendation=finding.recommendation,
+        )
+        for finding in findings
+    ]
+
     return ScanResponse(
         target=request.target,
         results=response_results,
+        findings=response_findings,
     )
 
 

@@ -22,11 +22,6 @@ class ScanResultResponse(BaseModel):
     banner: str | None = None
 
 
-class ScanResponse(BaseModel):
-    target: str
-    results: list[ScanResultResponse]
-
-
 class ScanSummaryResponse(BaseModel):
     id: int
     target: str
@@ -34,9 +29,24 @@ class ScanSummaryResponse(BaseModel):
     completed_at: datetime | None = None
 
 
+class SecurityFindingResponse(BaseModel):
+    rule_id: str
+    port: int
+    service: str
+    severity: str
+    title: str
+    description: str
+    recommendation: str
+
 class ScanDetailResponse(BaseModel):
     id: int
     target: str
     started_at: datetime
     completed_at: datetime | None = None
     results: list[ScanResultResponse]
+    findings: list[SecurityFindingResponse]
+
+class ScanResponse(BaseModel):
+    target: str
+    results: list[ScanResultResponse]
+    findings: list[SecurityFindingResponse]
