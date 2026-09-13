@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: network-security-monitor
+Version: 0.1.0
+Summary: A Python-based network security monitoring platform
+Requires-Python: >=3.13
