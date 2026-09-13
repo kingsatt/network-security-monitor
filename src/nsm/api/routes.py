@@ -6,12 +6,14 @@ from nsm.api.schemas import (
     ScanResultResponse,
     ScanSummaryResponse,
     ScanDetailResponse,
+    SecurityFindingResponse,
 )
 from nsm.db.database import SessionLocal
 from nsm.db.repository import (
     get_scans,
     get_scan,
     get_scan_results,
+    get_scan_findings,
 )
 from nsm.services.scan_service import run_scan
 from fastapi import APIRouter, HTTPException
@@ -22,7 +24,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from nsm.security.scan_analyzer import analyze_scan
-from nsm.api.schemas import SecurityFindingResponse
 
 router = APIRouter()
 
@@ -113,6 +114,10 @@ def get_scan_by_id(
         db,
         scan.id,
     )
+    findings = get_scan_findings(
+        db,
+        scan.id,
+    )
 
     response_results = [
         ScanResultResponse(
@@ -124,10 +129,24 @@ def get_scan_by_id(
         for result in results
     ]
 
+    response_findings = [
+        SecurityFindingResponse(
+            rule_id=finding.rule_id,
+            port=finding.port,
+            service=finding.service,
+            severity=finding.severity,
+            title=finding.title,
+            description=finding.description,
+            recommendation=finding.recommendation,
+        )
+        for finding in findings
+    ]
+
     return ScanDetailResponse(
         id=scan.id,
         target=scan.target,
         started_at=scan.started_at,
         completed_at=scan.completed_at,
         results=response_results,
+        findings=response_findings,
     )

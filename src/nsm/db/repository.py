@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from nsm.db.models import Scan, ScanResult
+from nsm.db.models import Scan, ScanResult, SecurityFinding
 
 
 def create_scan(
@@ -68,6 +68,43 @@ def get_scan_results(
         ScanResult.scan_id == scan_id
     ).all()
 
+def get_scan_findings(
+    db: Session,
+    scan_id: int,
+) -> list[SecurityFinding]:
+    return (
+        db.query(SecurityFinding)
+        .filter(SecurityFinding.scan_id == scan_id)
+        .all()
+    )
 
 def commit(db: Session) -> None:
     db.commit()
+
+def create_security_finding(
+    db: Session,
+    scan_id: int,
+    rule_id: str,
+    port: int,
+    service: str,
+    severity: str,
+    title: str,
+    description: str,
+    recommendation: str,
+) -> SecurityFinding:
+    finding = SecurityFinding(
+        scan_id=scan_id,
+        rule_id=rule_id,
+        port=port,
+        service=service,
+        severity=severity,
+        title=title,
+        description=description,
+        recommendation=recommendation,
+    )
+
+    db.add(finding)
+    db.flush()
+    db.refresh(finding)
+
+    return finding

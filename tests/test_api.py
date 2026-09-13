@@ -57,6 +57,42 @@ def test_create_scan(mock_run_scan, client):
         ports=[22, 80],
     )
 
+@patch("nsm.api.routes.run_scan")
+def test_create_scan_returns_security_findings(mock_run_scan, client):
+    mock_run_scan.return_value = [
+        PortScanResult(
+            port=23,
+            is_open=True,
+            service="TELNET",
+            banner="Telnet test banner",
+        ),
+    ]
+
+    response = client.post(
+        "/scan",
+        json={
+            "target": "127.0.0.1",
+            "ports": [23],
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data["findings"]) == 1
+
+    finding = data["findings"][0]
+
+    assert finding["rule_id"] == "TELNET_EXPOSED"
+    assert finding["port"] == 23
+    assert finding["service"] == "TELNET"
+    assert finding["severity"] == "HIGH"
+    assert finding["title"] == "Insecure Telnet service exposed"
+    assert finding["recommendation"] == (
+        "Disable Telnet and use SSH for secure remote administration."
+    )
+
 def test_list_scans(client):
     response = client.get("/scans")
 
@@ -143,3 +179,64 @@ def test_scan_strips_target_whitespace(client):
 
     assert response.status_code == 200
     assert response.json()["target"] == "127.0.0.1"
+
+def test_scan_persists_and_returns_security_findings(client):
+    response = client.post(
+        "/scan",
+        json={
+            "target": "127.0.0.1",
+            "ports": [23],
+        },
+    )
+
+    assert response.status_code == 200
+
+    scan_response = response.json()
+
+    assert "findings" in scan_response
+
+    # Port 23 may not actually be open on the test machine,
+    # so this test should mock the scanner result.
+
+@patch("nsm.services.scan_service.perform_scan")
+def test_scan_persists_results_and_findings(mock_perform_scan, client):
+    mock_perform_scan.return_value = [
+        PortScanResult(
+            port=23,
+            is_open=True,
+            service="TELNET",
+            banner="Telnet test banner",
+        ),
+    ]
+
+    response = client.post(
+        "/scan",
+        json={
+            "target": "127.0.0.1",
+            "ports": [23],
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["target"] == "127.0.0.1"
+    assert len(data["results"]) == 1
+    assert len(data["findings"]) == 1
+
+    scan_response = client.get("/scans/1")
+
+    assert scan_response.status_code == 200
+
+    scan_data = scan_response.json()
+
+    assert scan_data["id"] == 1
+    assert scan_data["target"] == "127.0.0.1"
+
+    assert len(scan_data["results"]) == 1
+    assert scan_data["results"][0]["port"] == 23
+    assert scan_data["results"][0]["service"] == "TELNET"
+
+    assert len(scan_data["findings"]) == 1
+    assert scan_data["findings"][0]["rule_id"] == "TELNET_EXPOSED"
+    assert scan_data["findings"][0]["severity"] == "HIGH"

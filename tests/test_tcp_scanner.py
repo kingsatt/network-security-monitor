@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from nsm.scanner.tcp_scanner import TCPScanner, PortScanResult
 from nsm.services.service_detector import ServiceDetector
+from nsm.services.banner_parser import BannerParser, ParsedBanner
 
 
 def test_scan_port_returns_true_when_connection_succeeds():
@@ -214,6 +215,8 @@ def test_scan_ports_includes_banner_for_open_port():
             is_open=True,
             service="SSH",
             banner="SSH-2.0-OpenSSH_9.9",
+            product="OpenSSH",
+            version="9.9",
         )
     ]
 
@@ -221,3 +224,36 @@ def test_scan_ports_includes_banner_for_open_port():
         "127.0.0.1",
         22,
     )
+
+def test_scan_ports_parses_banner():
+    scanner = TCPScanner("127.0.0.1")
+
+    with patch.object(scanner, "scan_port", return_value=True), \
+         patch.object(
+             ServiceDetector,
+             "grab_banner",
+             return_value="SSH-2.0-OpenSSH_9.9",
+         ), \
+         patch.object(
+             BannerParser,
+             "parse",
+             return_value=ParsedBanner(
+                 product="OpenSSH",
+                 version="9.9",
+             ),
+         ) as mock_parse:
+
+        results = scanner.scan_ports([22])
+
+    assert results == [
+        PortScanResult(
+            port=22,
+            is_open=True,
+            service="SSH",
+            banner="SSH-2.0-OpenSSH_9.9",
+            product="OpenSSH",
+            version="9.9",
+        )
+    ]
+
+    mock_parse.assert_called_once_with("SSH-2.0-OpenSSH_9.9")

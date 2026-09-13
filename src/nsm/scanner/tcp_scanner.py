@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 from nsm.services.service_detector import ServiceDetector
+from nsm.services.banner_parser import BannerParser
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,8 @@ class PortScanResult:
     is_open: bool
     service: Optional[str] = None
     banner: Optional[str] = None
+    product: Optional[str] = None
+    version: Optional[str] = None
 
 
 class TCPScanner:
@@ -72,22 +75,30 @@ class TCPScanner:
 
             service = None
             banner = None
+            product = None
+            version = None
 
             if is_open:
                 service = ServiceDetector.detect(port)
-                banner = ServiceDetector.grab_banner(
-                    self.target,
-                    port,
-                )
+                banner = ServiceDetector.grab_banner(self.target, port)
+
+                if banner:
+                    parsed_banner = BannerParser.parse(banner)
+
+                    if parsed_banner:
+                        product = parsed_banner.product
+                        version = parsed_banner.version
 
             results.append(
-                PortScanResult(
-                    port=port,
-                    is_open=is_open,
-                    service=service,
-                    banner=banner,
-                )
+            PortScanResult(
+                port=port,
+                is_open=is_open,
+                service=service,
+                banner=banner,
+                product=product,
+                version=version,
             )
+        )
 
         return results
 
@@ -96,25 +107,37 @@ class TCPScanner:
         ports: list[int],
         max_workers: int = 10,
     ) -> list[PortScanResult]:
-
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            open_statuses = list(
-                executor.map(self.scan_port, ports)
+            open_statuses = list(executor.map(self.scan_port, ports))
+
+        results = []
+
+        for port, is_open in zip(ports, open_statuses):
+            service = None
+            banner = None
+            product = None
+            version = None
+
+            if is_open:
+                service = ServiceDetector.detect(port)
+                banner = ServiceDetector.grab_banner(self.target, port)
+
+                if banner:
+                    parsed_banner = BannerParser.parse(banner)
+
+                    if parsed_banner:
+                        product = parsed_banner.product
+                        version = parsed_banner.version
+
+            results.append(
+                PortScanResult(
+                    port=port,
+                    is_open=is_open,
+                    service=service,
+                    banner=banner,
+                    product=product,
+                    version=version,
+                )
             )
 
-        return [
-            PortScanResult(
-                port=port,
-                is_open=is_open,
-                service=ServiceDetector.detect(port)
-                if is_open
-                else None,
-                banner=ServiceDetector.grab_banner(
-                    self.target,
-                    port,
-                )
-                if is_open
-                else None,
-            )
-            for port, is_open in zip(ports, open_statuses)
-        ]
+        return results

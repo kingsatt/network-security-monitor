@@ -52,3 +52,15 @@ def client():
     app.dependency_overrides.clear()
 
     Base.metadata.drop_all(bind=test_engine)
+
+@pytest.fixture
+def db():
+    Base.metadata.create_all(bind=test_engine)
+
+    db = TestingSessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
+        Base.metadata.drop_all(bind=test_engine)

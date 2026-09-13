@@ -3,8 +3,10 @@ from datetime import datetime, timezone
 from nsm.db.repository import (
     create_scan,
     create_scan_result,
+    create_security_finding,
     commit,
 )
+from nsm.security.scan_analyzer import analyze_scan
 
 
 def save_scan(
@@ -28,9 +30,22 @@ def save_scan(
             banner=result.banner,
         )
 
-    scan.completed_at = datetime.now(
-        timezone.utc
-    )
+    findings = analyze_scan(results)
+
+    for finding in findings:
+        create_security_finding(
+            db=db,
+            scan_id=scan.id,
+            rule_id=finding.rule_id,
+            port=finding.port,
+            service=finding.service,
+            severity=finding.severity.value,
+            title=finding.title,
+            description=finding.description,
+            recommendation=finding.recommendation,
+        )
+
+    scan.completed_at = datetime.now(timezone.utc)
 
     commit(db)
 

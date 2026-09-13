@@ -62,3 +62,50 @@ class ScanResult(Base):
         String(1000),
         nullable=True,
     )
+
+class SecurityFinding(Base):
+    __tablename__ = "security_findings"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    scan_id: Mapped[int] = mapped_column(
+        ForeignKey("scans.id"),
+        nullable=False,
+    )
+
+    rule_id: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    port: Mapped[int] = mapped_column(
+        nullable=False,
+    )
+
+    service: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    severity: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    title: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    description: Mapped[str] = mapped_column(
+        String(1000),
+        nullable=False,
+    )
+
+    recommendation: Mapped[str] = mapped_column(
+        String(1000),
+        nullable=False,
+    )
