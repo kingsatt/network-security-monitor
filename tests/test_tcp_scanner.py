@@ -51,28 +51,34 @@ def test_scan_port_returns_false_when_socket_error_occurs():
 def test_scan_ports_returns_results_for_each_port():
     scanner = TCPScanner("127.0.0.1")
 
-    with patch.object(scanner, "scan_port") as mock_scan_port:
+    with patch.object(scanner, "scan_port") as mock_scan_port, \
+         patch.object(ServiceDetector, "grab_banner") as mock_grab_banner:
+
         mock_scan_port.side_effect = [True, False, True]
+        mock_grab_banner.return_value = None
 
         results = scanner.scan_ports([22, 80, 443])
 
     assert results == [
-            PortScanResult(
-                port=22,
-                is_open=True,
-                service="SSH",
-            ),
-            PortScanResult(
-                port=80,
-                is_open=False,
-                service=None
-            ),
-            PortScanResult(
-                port=443,
-                is_open=True,
-                service="HTTPS",
-            )
-        ]
+        PortScanResult(
+            port=22,
+            is_open=True,
+            service="SSH",
+            banner=None,
+        ),
+        PortScanResult(
+            port=80,
+            is_open=False,
+            service=None,
+            banner=None,
+        ),
+        PortScanResult(
+            port=443,
+            is_open=True,
+            service="HTTPS",
+            banner=None,
+        ),
+    ]
 
 def test_scan_ports_scans_each_port():
     scanner = TCPScanner("127.0.0.1")
@@ -138,6 +144,10 @@ def test_scan_ports_concurrent_returns_results():
         scanner,
         "scan_port",
         side_effect=scan_port_side_effect,
+    ), patch.object(
+        ServiceDetector,
+        "grab_banner",
+        return_value=None,
     ):
         results = scanner.scan_ports_concurrent(
             [22, 80, 443]
@@ -148,16 +158,19 @@ def test_scan_ports_concurrent_returns_results():
             port=22,
             is_open=True,
             service="SSH",
+            banner=None,
         ),
         PortScanResult(
             port=80,
             is_open=False,
             service=None,
+            banner=None,
         ),
         PortScanResult(
             port=443,
             is_open=True,
             service="HTTPS",
+            banner=None,
         ),
     ]
 
