@@ -40,6 +40,16 @@ class SecurityFindingResponse(BaseModel):
     description: str
     recommendation: str
 
+class VulnerabilityResponse(BaseModel):
+    cve_id: str
+    product: str
+    version: str
+    severity: str
+    cvss_score: float
+    description: str
+    port: int
+    service: str | None = None
+
 class ScanDetailResponse(BaseModel):
     id: int
     target: str
@@ -47,6 +57,7 @@ class ScanDetailResponse(BaseModel):
     completed_at: datetime | None = None
     results: list[ScanResultResponse]
     findings: list[SecurityFindingResponse]
+    vulnerabilities: list[VulnerabilityResponse]
 
 class ScanResponse(BaseModel):
     target: str

@@ -277,3 +277,51 @@ def test_scan_persists_results_and_findings(mock_perform_scan, client):
     assert len(scan_data["findings"]) == 1
     assert scan_data["findings"][0]["rule_id"] == "TELNET_EXPOSED"
     assert scan_data["findings"][0]["severity"] == "HIGH"
+
+@patch("nsm.services.scan_service.perform_scan")
+def test_scan_persists_and_returns_vulnerabilities(
+    mock_perform_scan,
+    client,
+):
+    mock_perform_scan.return_value = [
+        PortScanResult(
+            port=22,
+            is_open=True,
+            service="SSH",
+            banner="SSH-2.0-OpenSSH_9.9",
+            product="OpenSSH",
+            version="9.9",
+        ),
+    ]
+
+    response = client.post(
+        "/scan",
+        json={
+            "target": "127.0.0.1",
+            "ports": [22],
+        },
+    )
+
+    assert response.status_code == 200
+
+    scan_response = response.json()
+
+    assert scan_response["target"] == "127.0.0.1"
+
+    scan_response = client.get("/scans/1")
+
+    assert scan_response.status_code == 200
+
+    scan_data = scan_response.json()
+
+    assert len(scan_data["vulnerabilities"]) == 1
+
+    vulnerability = scan_data["vulnerabilities"][0]
+
+    assert vulnerability["cve_id"] == "CVE-2025-1234"
+    assert vulnerability["product"] == "OpenSSH"
+    assert vulnerability["version"] == "9.9"
+    assert vulnerability["severity"] == "HIGH"
+    assert vulnerability["cvss_score"] == 8.8
+    assert vulnerability["port"] == 22
+    assert vulnerability["service"] == "SSH"

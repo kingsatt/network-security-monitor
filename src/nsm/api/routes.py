@@ -10,12 +10,14 @@ from nsm.api.schemas import (
     ScanResultResponse,
     ScanSummaryResponse,
     SecurityFindingResponse,
+    VulnerabilityResponse,
 )
 from nsm.db.database import SessionLocal
 from nsm.db.repository import (
     get_scan,
     get_scan_findings,
     get_scan_results,
+    get_scan_vulnerabilities,
     get_scans,
 )
 from nsm.security.scan_analyzer import analyze_scan
@@ -121,6 +123,11 @@ def get_scan_by_id(
         scan.id,
     )
 
+    vulnerabilities = get_scan_vulnerabilities(
+        db,
+        scan.id,
+    )
+
     response_results = [
         ScanResultResponse(
             port=result.port,
@@ -146,6 +153,20 @@ def get_scan_by_id(
         for finding in findings
     ]
 
+    response_vulnerabilities = [
+        VulnerabilityResponse(
+            cve_id=vulnerability.cve_id,
+            product=vulnerability.product,
+            version=vulnerability.version,
+            severity=vulnerability.severity,
+            cvss_score=vulnerability.cvss_score,
+            description=vulnerability.description,
+            port=vulnerability.port,
+            service=vulnerability.service,
+        )
+        for vulnerability in vulnerabilities
+    ]
+
     return ScanDetailResponse(
         id=scan.id,
         target=scan.target,
@@ -153,4 +174,5 @@ def get_scan_by_id(
         completed_at=scan.completed_at,
         results=response_results,
         findings=response_findings,
+        vulnerabilities=response_vulnerabilities,
     )

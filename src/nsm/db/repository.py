@@ -2,7 +2,12 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from nsm.db.models import Scan, ScanResult, SecurityFinding
+from nsm.db.models import (
+    Scan,
+    ScanResult,
+    SecurityFinding,
+    Vulnerability,
+)
 
 
 def create_scan(
@@ -112,3 +117,43 @@ def create_security_finding(
     db.refresh(finding)
 
     return finding
+
+def create_vulnerability(
+    db: Session,
+    scan_id: int,
+    cve_id: str,
+    product: str,
+    version: str,
+    severity: str,
+    cvss_score: float,
+    description: str,
+    port: int,
+    service: str | None,
+) -> Vulnerability:
+    vulnerability = Vulnerability(
+        scan_id=scan_id,
+        cve_id=cve_id,
+        product=product,
+        version=version,
+        severity=severity,
+        cvss_score=cvss_score,
+        description=description,
+        port=port,
+        service=service,
+    )
+
+    db.add(vulnerability)
+    db.flush()
+    db.refresh(vulnerability)
+
+    return vulnerability
+
+def get_scan_vulnerabilities(
+    db: Session,
+    scan_id: int,
+) -> list[Vulnerability]:
+    return (
+        db.query(Vulnerability)
+        .filter(Vulnerability.scan_id == scan_id)
+        .all()
+    )

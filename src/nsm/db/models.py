@@ -90,3 +90,54 @@ class SecurityFinding(Base):
         String(1000),
         nullable=False,
     )
+
+class Vulnerability(Base):
+    __tablename__ = "vulnerabilities"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    scan_id: Mapped[int] = mapped_column(
+        ForeignKey("scans.id"),
+        nullable=False,
+    )
+
+    cve_id: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    product: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    version: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    severity: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    cvss_score: Mapped[float] = mapped_column(
+        nullable=False,
+    )
+
+    description: Mapped[str] = mapped_column(
+        String(2000),
+        nullable=False,
+    )
+
+    port: Mapped[int] = mapped_column(
+        nullable=False,
+    )
+
+    service: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
