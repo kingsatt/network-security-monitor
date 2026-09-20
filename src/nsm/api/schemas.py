@@ -58,6 +58,26 @@ class RiskAssessmentResponse(BaseModel):
     risk_score: float
     reason: str
 
+class SeverityCountsResponse(BaseModel):
+    critical: int = 0
+    high: int = 0
+    medium: int = 0
+    low: int = 0
+
+
+class DashboardSummaryResponse(BaseModel):
+    id: int
+    target: str
+    started_at: datetime
+    completed_at: datetime | None = None
+
+    total_ports: int
+    open_ports: int
+
+    findings: SeverityCountsResponse
+    vulnerabilities: SeverityCountsResponse
+    risks: SeverityCountsResponse
+
 class ScanDetailResponse(BaseModel):
     id: int
     target: str

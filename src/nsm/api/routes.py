@@ -7,11 +7,13 @@ from nsm.api.schemas import (
     ScanDetailResponse,
     ScanRequest,
     ScanResponse,
-    ScanResultResponse,
     ScanSummaryResponse,
+    ScanResultResponse,
     SecurityFindingResponse,
     VulnerabilityResponse,
     RiskAssessmentResponse,
+    DashboardSummaryResponse,
+    SeverityCountsResponse,
 )
 from nsm.db.database import SessionLocal
 from nsm.db.repository import (
@@ -196,3 +198,70 @@ def get_scan_by_id(
     vulnerabilities=response_vulnerabilities,
     risk_assessments=response_risk_assessments,
 )
+
+@router.get(
+    "/scans/{scan_id}/dashboard",
+    response_model=DashboardSummaryResponse,
+)
+def get_scan_dashboard(
+    scan_id: int,
+    db: Session = Depends(get_db),
+):
+    scan = get_scan(db, scan_id)
+
+    if scan is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Scan not found",
+        )
+
+    results = get_scan_results(
+        db,
+        scan.id,
+    )
+
+    findings = get_scan_findings(
+        db,
+        scan.id,
+    )
+
+    vulnerabilities = get_scan_vulnerabilities(
+        db,
+        scan.id,
+    )
+
+    risks = get_scan_risk_assessments(
+        db,
+        scan.id,
+    )
+
+    def count_severities(items):
+        counts = {
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0,
+        }
+
+        for item in items:
+            severity = item.severity.lower()
+
+            if severity in counts:
+                counts[severity] += 1
+
+        return SeverityCountsResponse(**counts)
+
+    return DashboardSummaryResponse(
+        id=scan.id,
+        target=scan.target,
+        started_at=scan.started_at,
+        completed_at=scan.completed_at,
+        total_ports=len(results),
+        open_ports=sum(
+            1 for result in results
+            if result.is_open
+        ),
+        findings=count_severities(findings),
+        vulnerabilities=count_severities(vulnerabilities),
+        risks=count_severities(risks),
+    )

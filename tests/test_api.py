@@ -352,3 +352,59 @@ def test_scan_persists_and_returns_vulnerabilities(
     assert risk["risk_score"] == 9.8
     assert "CVE-2025-1234" in risk["reason"]
     assert "exposed" in risk["reason"]
+
+def test_scan_dashboard_summary(client):
+    response = client.post(
+        "/scan",
+        json={
+            "target": "127.0.0.1",
+            "ports": [22, 80, 443],
+        },
+    )
+
+    assert response.status_code == 200
+
+    scan_response = response.json()
+    assert scan_response["target"] == "127.0.0.1"
+
+    scans_response = client.get("/scans")
+
+    assert scans_response.status_code == 200
+
+    scans = scans_response.json()
+    scan_id = scans[-1]["id"]
+
+    dashboard_response = client.get(
+        f"/scans/{scan_id}/dashboard"
+    )
+
+    assert dashboard_response.status_code == 200
+
+    dashboard = dashboard_response.json()
+
+    assert dashboard["id"] == scan_id
+    assert dashboard["target"] == "127.0.0.1"
+
+    assert dashboard["total_ports"] == 3
+    assert dashboard["open_ports"] >= 0
+
+    assert set(dashboard["findings"]) == {
+        "critical",
+        "high",
+        "medium",
+        "low",
+    }
+
+    assert set(dashboard["vulnerabilities"]) == {
+        "critical",
+        "high",
+        "medium",
+        "low",
+    }
+
+    assert set(dashboard["risks"]) == {
+        "critical",
+        "high",
+        "medium",
+        "low",
+    }

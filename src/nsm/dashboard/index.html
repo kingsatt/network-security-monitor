@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Network Security Monitor</title>
+
+    <link
+        rel="stylesheet"
+        href="/dashboard/static/style.css"
+    >
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-icon">◈</span>
+
+            <div>
+                <h1>Network Security Monitor</h1>
+                <p>Security Operations Dashboard</p>
+            </div>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            SYSTEM ONLINE
+        </div>
+    </header>
+
+
+    <main class="dashboard">
+
+        <section class="target-section">
+            <div>
+                <span class="section-label">CURRENT TARGET</span>
+                <h2 id="target">Loading...</h2>
+            </div>
+
+            <div class="scan-time">
+                <span class="section-label">LAST SCAN</span>
+                <span id="scan-time">Loading...</span>
+            </div>
+        </section>
+
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <span class="stat-label">OPEN PORTS</span>
+                <strong id="open-ports">—</strong>
+                <span class="stat-description">Detected services</span>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-label">FINDINGS</span>
+                <strong id="finding-count">—</strong>
+                <span class="stat-description">Security findings</span>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-label">VULNERABILITIES</span>
+                <strong id="vulnerability-count">—</strong>
+                <span class="stat-description">Known CVEs</span>
+            </article>
+
+            <article class="stat-card risk-card">
+                <span class="stat-label">RISK LEVEL</span>
+                <strong id="risk-level">—</strong>
+                <span class="stat-description">Current assessment</span>
+            </article>
+
+        </section>
+
+
+        <section class="content-grid">
+
+            <article class="panel">
+                <div class="panel-header">
+                    <div>
+                        <span class="section-label">
+                            SECURITY OVERVIEW
+                        </span>
+
+                        <h3>Findings by Severity</h3>
+                    </div>
+                </div>
+
+                <div class="severity-list">
+
+                    <div class="severity-row">
+                        <div class="severity-name critical">
+                            <span class="severity-dot"></span>
+                            CRITICAL
+                        </div>
+
+                        <div class="severity-bar">
+                            <div
+                                id="critical-bar"
+                                class="severity-fill critical-fill"
+                            ></div>
+                        </div>
+
+                        <span id="critical-count">0</span>
+                    </div>
+
+
+                    <div class="severity-row">
+                        <div class="severity-name high">
+                            <span class="severity-dot"></span>
+                            HIGH
+                        </div>
+
+                        <div class="severity-bar">
+                            <div
+                                id="high-bar"
+                                class="severity-fill high-fill"
+                            ></div>
+                        </div>
+
+                        <span id="high-count">0</span>
+                    </div>
+
+
+                    <div class="severity-row">
+                        <div class="severity-name medium">
+                            <span class="severity-dot"></span>
+                            MEDIUM
+                        </div>
+
+                        <div class="severity-bar">
+                            <div
+                                id="medium-bar"
+                                class="severity-fill medium-fill"
+                            ></div>
+                        </div>
+
+                        <span id="medium-count">0</span>
+                    </div>
+
+
+                    <div class="severity-row">
+                        <div class="severity-name low">
+                            <span class="severity-dot"></span>
+                            LOW
+                        </div>
+
+                        <div class="severity-bar">
+                            <div
+                                id="low-bar"
+                                class="severity-fill low-fill"
+                            ></div>
+                        </div>
+
+                        <span id="low-count">0</span>
+                    </div>
+
+                </div>
+            </article>
+
+
+            <article class="panel">
+                <div class="panel-header">
+                    <div>
+                        <span class="section-label">
+                            RISK DISTRIBUTION
+                        </span>
+
+                        <h3>Risk Assessments</h3>
+                    </div>
+                </div>
+
+                <div class="risk-summary">
+
+                    <div class="risk-item">
+                        <span class="risk-number" id="risk-critical">
+                            0
+                        </span>
+
+                        <span>Critical</span>
+                    </div>
+
+                    <div class="risk-item">
+                        <span class="risk-number" id="risk-high">
+                            0
+                        </span>
+
+                        <span>High</span>
+                    </div>
+
+                    <div class="risk-item">
+                        <span class="risk-number" id="risk-medium">
+                            0
+                        </span>
+
+                        <span>Medium</span>
+                    </div>
+
+                    <div class="risk-item">
+                        <span class="risk-number" id="risk-low">
+                            0
+                        </span>
+
+                        <span>Low</span>
+                    </div>
+
+                </div>
+            </article>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-header">
+                <div>
+                    <span class="section-label">
+                        NETWORK EXPOSURE
+                    </span>
+
+                    <h3>Open Services</h3>
+                </div>
+
+                <span id="port-count" class="panel-badge">
+                    0 ports
+                </span>
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>PORT</th>
+                            <th>SERVICE</th>
+                            <th>PRODUCT</th>
+                            <th>VERSION</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="services-table">
+                        <tr>
+                            <td colspan="5" class="loading">
+                                Loading services...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-header">
+                <div>
+                    <span class="section-label">
+                        SECURITY INTELLIGENCE
+                    </span>
+
+                    <h3>Vulnerabilities</h3>
+                </div>
+
+                <span id="cve-count" class="panel-badge">
+                    0 CVEs
+                </span>
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>CVE</th>
+                            <th>PRODUCT</th>
+                            <th>VERSION</th>
+                            <th>SEVERITY</th>
+                            <th>CVSS</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="vulnerabilities-table">
+                        <tr>
+                            <td colspan="5" class="loading">
+                                Loading vulnerabilities...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-header">
+                <div>
+                    <span class="section-label">
+                        SECURITY FINDINGS
+                    </span>
+
+                    <h3>Detected Exposure</h3>
+                </div>
+
+                <span id="finding-badge" class="panel-badge">
+                    0 findings
+                </span>
+            </div>
+
+
+            <div id="findings-list" class="findings-list">
+                <div class="loading">
+                    Loading findings...
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+        <span>Network Security Monitor</span>
+        <span>Security monitoring &amp; vulnerability intelligence</span>
+    </footer>
+
+
+    <script src="/dashboard/static/app.js"></script>
+
+</body>
+</html>
