@@ -244,7 +244,11 @@ def get_scan_dashboard(
         }
 
         for item in items:
-            severity = item.severity.lower()
+            severity = (
+                item.risk_level.lower()
+                if hasattr(item, "risk_level")
+                else item.severity.lower()
+            )
 
             if severity in counts:
                 counts[severity] += 1
