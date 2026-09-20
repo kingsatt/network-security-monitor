@@ -663,3 +663,10 @@ def test_matches_cve_configuration_version_range():
         product="OpenSSH",
         version="10.0",
     )
+
+def test_version_in_range_supports_openssh_patch_version():
+    assert NVDProvider._version_in_range(
+        "9.6p1",
+        start="9.6",
+        end="9.6p2",
+    )

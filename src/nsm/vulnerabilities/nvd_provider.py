@@ -100,6 +100,16 @@ class NVDProvider(VulnerabilityProvider):
         return ""
 
     @staticmethod
+    def _normalize_version(version: str) -> str:
+        if "p" in version:
+            base, patch = version.split("p", 1)
+
+            if patch.isdigit():
+                return f"{base}.post{patch}"
+
+        return version
+    
+    @staticmethod
     def _version_in_range(
         version: str,
         start: str | None = None,
@@ -107,10 +117,10 @@ class NVDProvider(VulnerabilityProvider):
         end: str | None = None,
         end_inclusive: bool = True,
     ) -> bool:
-        current = Version(version)
+        current = Version(NVDProvider._normalize_version(version))
 
         if start is not None:
-            start_version = Version(start)
+            start_version = Version(NVDProvider._normalize_version(start))
 
             if start_inclusive:
                 if current < start_version:
@@ -120,7 +130,7 @@ class NVDProvider(VulnerabilityProvider):
                     return False
 
         if end is not None:
-            end_version = Version(end)
+            end_version = Version(NVDProvider._normalize_version(end))
 
             if end_inclusive:
                 if current > end_version:
