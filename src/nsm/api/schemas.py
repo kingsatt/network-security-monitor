@@ -50,6 +50,14 @@ class VulnerabilityResponse(BaseModel):
     port: int
     service: str | None = None
 
+class RiskAssessmentResponse(BaseModel):
+    port: int
+    service: str | None = None
+    vulnerability_id: int
+    risk_level: str
+    risk_score: float
+    reason: str
+
 class ScanDetailResponse(BaseModel):
     id: int
     target: str
@@ -58,6 +66,7 @@ class ScanDetailResponse(BaseModel):
     results: list[ScanResultResponse]
     findings: list[SecurityFindingResponse]
     vulnerabilities: list[VulnerabilityResponse]
+    risk_assessments: list[RiskAssessmentResponse]
 
 class ScanResponse(BaseModel):
     target: str

@@ -5,10 +5,12 @@ from nsm.db.repository import (
     create_scan_result,
     create_security_finding,
     create_vulnerability,
+    create_risk_assessment,
     commit,
 )
 
 from nsm.security.scan_analyzer import analyze_scan
+from nsm.security.risk_service import assess_vulnerability_risk
 from nsm.vulnerabilities.scan_vulnerability_analyzer import (
     analyze_scan_vulnerabilities,
 )
@@ -60,7 +62,7 @@ def save_scan(
         )
 
         for vulnerability in vulnerabilities:
-            create_vulnerability(
+            saved_vulnerability = create_vulnerability(
                 db=db,
                 scan_id=scan.id,
                 cve_id=vulnerability.cve_id,
@@ -72,6 +74,26 @@ def save_scan(
                 port=vulnerability.port,
                 service=vulnerability.service,
             )
+
+            for result in results:
+                if result.port != vulnerability.port:
+                    continue
+
+                risk = assess_vulnerability_risk(
+                    vulnerability=vulnerability,
+                    scan_result=result,
+                )
+
+                create_risk_assessment(
+                    db=db,
+                    scan_id=scan.id,
+                    vulnerability_id=saved_vulnerability.id,
+                    port=risk.port,
+                    service=risk.service,
+                    risk_level=risk.risk_level,
+                    risk_score=risk.risk_score,
+                    reason=risk.reason,
+                )
 
     scan.completed_at = datetime.now(timezone.utc)
 

@@ -7,6 +7,7 @@ from nsm.db.models import (
     ScanResult,
     SecurityFinding,
     Vulnerability,
+    RiskAssessment,
 )
 
 
@@ -155,5 +156,41 @@ def get_scan_vulnerabilities(
     return (
         db.query(Vulnerability)
         .filter(Vulnerability.scan_id == scan_id)
+        .all()
+    )
+
+def create_risk_assessment(
+    db: Session,
+    scan_id: int,
+    vulnerability_id: int,
+    port: int,
+    service: str | None,
+    risk_level: str,
+    risk_score: float,
+    reason: str,
+) -> RiskAssessment:
+    risk_assessment = RiskAssessment(
+        scan_id=scan_id,
+        vulnerability_id=vulnerability_id,
+        port=port,
+        service=service,
+        risk_level=risk_level,
+        risk_score=risk_score,
+        reason=reason,
+    )
+
+    db.add(risk_assessment)
+    db.flush()
+    db.refresh(risk_assessment)
+
+    return risk_assessment
+
+def get_scan_risk_assessments(
+    db: Session,
+    scan_id: int,
+) -> list[RiskAssessment]:
+    return (
+        db.query(RiskAssessment)
+        .filter(RiskAssessment.scan_id == scan_id)
         .all()
     )

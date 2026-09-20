@@ -11,6 +11,7 @@ from nsm.api.schemas import (
     ScanSummaryResponse,
     SecurityFindingResponse,
     VulnerabilityResponse,
+    RiskAssessmentResponse,
 )
 from nsm.db.database import SessionLocal
 from nsm.db.repository import (
@@ -18,6 +19,7 @@ from nsm.db.repository import (
     get_scan_findings,
     get_scan_results,
     get_scan_vulnerabilities,
+    get_scan_risk_assessments,
     get_scans,
 )
 from nsm.security.scan_analyzer import analyze_scan
@@ -128,6 +130,11 @@ def get_scan_by_id(
         scan.id,
     )
 
+    risk_assessments = get_scan_risk_assessments(
+        db,
+        scan.id,
+    )
+
     response_results = [
         ScanResultResponse(
             port=result.port,
@@ -167,12 +174,25 @@ def get_scan_by_id(
         for vulnerability in vulnerabilities
     ]
 
+    response_risk_assessments = [
+        RiskAssessmentResponse(
+            port=risk.port,
+            service=risk.service,
+            vulnerability_id=risk.vulnerability_id,
+            risk_level=risk.risk_level,
+            risk_score=risk.risk_score,
+            reason=risk.reason,
+        )
+        for risk in risk_assessments
+    ]
+
     return ScanDetailResponse(
-        id=scan.id,
-        target=scan.target,
-        started_at=scan.started_at,
-        completed_at=scan.completed_at,
-        results=response_results,
-        findings=response_findings,
-        vulnerabilities=response_vulnerabilities,
-    )
+    id=scan.id,
+    target=scan.target,
+    started_at=scan.started_at,
+    completed_at=scan.completed_at,
+    results=response_results,
+    findings=response_findings,
+    vulnerabilities=response_vulnerabilities,
+    risk_assessments=response_risk_assessments,
+)

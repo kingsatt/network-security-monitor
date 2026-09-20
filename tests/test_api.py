@@ -2,6 +2,8 @@ from unittest.mock import patch
 
 from nsm.scanner.tcp_scanner import PortScanResult
 
+from nsm.vulnerabilities.models import Vulnerability
+
 
 def test_root(client):
     response = client.get("/")
@@ -278,9 +280,11 @@ def test_scan_persists_results_and_findings(mock_perform_scan, client):
     assert scan_data["findings"][0]["rule_id"] == "TELNET_EXPOSED"
     assert scan_data["findings"][0]["severity"] == "HIGH"
 
+@patch("nsm.services.scan_service.VulnerabilityScanner")
 @patch("nsm.services.scan_service.perform_scan")
 def test_scan_persists_and_returns_vulnerabilities(
     mock_perform_scan,
+    mock_vulnerability_scanner,
     client,
 ):
     mock_perform_scan.return_value = [
@@ -292,6 +296,17 @@ def test_scan_persists_and_returns_vulnerabilities(
             product="OpenSSH",
             version="9.9",
         ),
+    ]
+
+    mock_vulnerability_scanner.return_value.scan.return_value = [
+        Vulnerability(
+            cve_id="CVE-2025-1234",
+            product="OpenSSH",
+            version="9.9",
+            severity="HIGH",
+            cvss_score=8.8,
+            description="Example vulnerability",
+        )
     ]
 
     response = client.post(
@@ -325,3 +340,15 @@ def test_scan_persists_and_returns_vulnerabilities(
     assert vulnerability["cvss_score"] == 8.8
     assert vulnerability["port"] == 22
     assert vulnerability["service"] == "SSH"
+
+    assert len(scan_data["risk_assessments"]) == 1
+
+    risk = scan_data["risk_assessments"][0]
+
+    assert risk["port"] == 22
+    assert risk["service"] == "SSH"
+    assert risk["vulnerability_id"] == 1
+    assert risk["risk_level"] == "CRITICAL"
+    assert risk["risk_score"] == 9.8
+    assert "CVE-2025-1234" in risk["reason"]
+    assert "exposed" in risk["reason"]

@@ -141,3 +141,44 @@ class Vulnerability(Base):
         String(100),
         nullable=True,
     )
+
+class RiskAssessment(Base):
+    __tablename__ = "risk_assessments"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    scan_id: Mapped[int] = mapped_column(
+        ForeignKey("scans.id"),
+        nullable=False,
+    )
+
+    vulnerability_id: Mapped[int] = mapped_column(
+        ForeignKey("vulnerabilities.id"),
+        nullable=False,
+    )
+
+    port: Mapped[int] = mapped_column(
+        nullable=False,
+    )
+
+    service: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    risk_level: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    risk_score: Mapped[float] = mapped_column(
+        nullable=False,
+    )
+
+    reason: Mapped[str] = mapped_column(
+        String(2000),
+        nullable=False,
+    )
