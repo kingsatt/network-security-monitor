@@ -35,6 +35,9 @@ async function loadDashboard() {
 
         const dashboard = await dashboardResponse.json();
         const detail = await detailResponse.json();
+        const openServices = detail.results.filter(
+            result => result.is_open
+        );
 
         // --------------------------------
         // Target
@@ -111,6 +114,45 @@ async function loadDashboard() {
 
         const riskLevelElement =
             document.querySelector("#risk-level");
+
+        if (riskLevelElement) {
+
+            const risks = dashboard.risks;
+
+            riskLevelElement.classList.remove(
+                "risk-critical",
+                "risk-high",
+                "risk-medium",
+                "risk-low",
+                "risk-none",
+            );
+
+            if (risks.critical > 0) {
+
+                riskLevelElement.textContent = "CRITICAL";
+                riskLevelElement.classList.add("risk-critical");
+
+            } else if (risks.high > 0) {
+
+                riskLevelElement.textContent = "HIGH";
+                riskLevelElement.classList.add("risk-high");
+
+            } else if (risks.medium > 0) {
+
+                riskLevelElement.textContent = "MEDIUM";
+                riskLevelElement.classList.add("risk-medium");
+
+            } else if (risks.low > 0) {
+
+                riskLevelElement.textContent = "LOW";
+                riskLevelElement.classList.add("risk-low");
+
+            } else {
+
+                riskLevelElement.textContent = "NONE";
+                riskLevelElement.classList.add("risk-none");
+            }
+        }
 
         if (riskLevelElement) {
             const risks = dashboard.risks;
@@ -228,7 +270,11 @@ async function loadDashboard() {
                         <td>${result.service ?? "Unknown"}</td>
                         <td>${result.product ?? "Unknown"}</td>
                         <td>${result.version ?? "Unknown"}</td>
-                        <td>OPEN</td>
+                        <td>
+                            <span class="status-open">
+                                OPEN
+                            </span>
+                        </td>
                     `;
 
                     servicesTable.appendChild(row);
@@ -368,5 +414,13 @@ async function loadDashboard() {
 
 document.addEventListener(
     "DOMContentLoaded",
-    loadDashboard
+    () => {
+        loadDashboard();
+
+        // Refresh every 30 seconds
+        setInterval(
+            loadDashboard,
+            30000
+        );
+    }
 );
